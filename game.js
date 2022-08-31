@@ -12,6 +12,10 @@ const playerPosition = {
     x: undefined,
     y: undefined,
 }
+const giftPosition = {
+    x: undefined,
+    y: undefined,
+}
 
 window.addEventListener("load", setCanvasSize); //Aca decimos que apenas habra la ventana y termine de cargar (load) comience con la funciôn
 window.addEventListener("resize", setCanvasSize);
@@ -53,6 +57,9 @@ function startGame(){
                     playerPosition.y = posY;
                     console.log({playerPosition});
                }
+            } else if (col == 'I'){
+                giftPosition.x = posX;
+                giftPosition.y = posY;
             }
 
             game.fillText(emoji, posX, posY);
@@ -63,6 +70,14 @@ function startGame(){
 }
 
 function movePlayer() {
+    const giftCollisionX = playerPosition.x.toFixed(2) == giftPosition.x.toFixed(2); //Colocamos toFixed para limitar la cantidad de decimales a 2, para que coincidan con las
+    const giftCollisionY = playerPosition.y.toFixed(2) == giftPosition.y.toFixed(2); //posiciones, ya que sino al haber tantos decimales puede que alguno no coincida y no haga match.
+    const giftCollision = giftCollisionX && giftCollisionY;
+    
+    if (giftCollision){
+        console.log('Subiste de nivel');
+    }
+
     game.fillText(emojis['PLAYER'], playerPosition.x , playerPosition.y);
 }
 
