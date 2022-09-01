@@ -4,10 +4,16 @@ const btnUp = document.querySelector("#up");
 const btnLeft = document.querySelector("#left");
 const btnRight = document.querySelector("#right");
 const btnDown = document.querySelector("#down");
+const spanLives = document.querySelector("#lives");
+const spanTime = document.querySelector("#time");
 
 let canvasSize;
 let elementsSize;
 let level = 0;
+let lives = 3;
+let timeStart;
+let timePlayer;
+let timeInterval;
 
 const playerPosition = {
     x: undefined,
@@ -49,9 +55,16 @@ function startGame(){
         return; //return para no volver a renderizar el mapa ya que completado el juego, no hay más.
     }
 
+    if (!timeStart){
+        timeStart = Date.now(); //Devuelve el número de milisegundos transcurridos.
+        timeInterval = setInterval(showTime, 100);
+    }
+
     const mapRows = map.trim().split('\n');
     const mapRowCols = mapRows.map(row => row.trim().split(''));
     console.log({map, mapRows, mapRowCols});
+
+    showLives();
 
     enemyPositions = []; //Redeclaramos enemyPosition para que los enemigos no se duplicaran cada vez que nos movieramos.
     game.clearRect(0,0,canvasSize,canvasSize);
@@ -101,7 +114,7 @@ function movePlayer() {
     });
 
     if (enemyCollision){
-        console.log('CHOCASTE CON UN ENEMIGO');
+       levelFail();
     }
 
     game.fillText(emojis['PLAYER'], playerPosition.x , playerPosition.y);
@@ -113,8 +126,33 @@ function levelWin(){
     startGame();
 }
 
+function levelFail(){
+    console.log('CHOCASTE CON UN ENEMIGO');
+    lives --;
+    console.log(lives);
+
+    if (lives <= 0){ //Reinicio de las siguientes variables una vez que las vidas sean menor o iguales a 0
+        level = 0;
+        lives = 3;
+        timeStart = undefined 
+    }
+
+    playerPosition.x = undefined;//Dejamos undefined para que al volver a iniciar starGame, al momento de renderizar vuelva
+    playerPosition.y = undefined;//a declarar las posiciones de x e y.
+    startGame();
+}
+
 function gameWin(){
     console.log('Completaste el juego');
+    clearInterval(timeInterval);
+}
+
+function showLives(){
+    spanLives.innerHTML = emojis['HEART'].repeat(lives); //El método repeat() construye y devuelve una nueva cadena que contiene el número
+}                                                        //especificado de copias de la cadena en la cual fue llamada, concatenados. (Sirve con Strings)
+
+function showTime(){
+    spanTime.innerHTML = +((Date.now() - timeStart)/1000);
 }
 
 window.addEventListener("keydown", moveByKeys);
