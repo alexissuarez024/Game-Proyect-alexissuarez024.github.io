@@ -7,6 +7,7 @@ const btnDown = document.querySelector("#down");
 
 let canvasSize;
 let elementsSize;
+let level = 0;
 
 const playerPosition = {
     x: undefined,
@@ -17,14 +18,16 @@ const giftPosition = {
     y: undefined,
 }
 
+let enemyPositions = [];
+
 window.addEventListener("load", setCanvasSize); //Aca decimos que apenas habra la ventana y termine de cargar (load) comience con la funciôn
 window.addEventListener("resize", setCanvasSize);
 
 function setCanvasSize(){
     if (window.innerHeight > window.innerWidth) { //Si el alto es mas grande que el ancho
-        canvasSize = (window.innerWidth * 0.8);  //El 'canvasSize' pasara a ser multiplicado por 0.8 para poder tener medidas iguales
+        canvasSize = (window.innerWidth * 0.9);  //El 'canvasSize' pasara a ser multiplicado por 0.9 para poder tener medidas iguales
     } else{
-        canvasSize = (window.innerHeight * 0.8); //Lo mismo pero al contrario, ahora se multiplica el alto
+        canvasSize = (window.innerHeight * 0.9); //Lo mismo pero al contrario, ahora se multiplica el alto.
     }
 canvas.setAttribute("width", canvasSize);  //Aplicamos los cambios al canvas 
 canvas.setAttribute("height", canvasSize); //Aplicamos los cambios al canvas
@@ -36,15 +39,23 @@ canvas.setAttribute("height", canvasSize); //Aplicamos los cambios al canvas
 
 function startGame(){
 
-    game.font = (elementsSize - 10) + 'px Verdana';
+    game.font = (elementsSize - 10) - 1 + 'px Verdana';
     game.textAlign = 'end';
     
-    const map = maps[0];
+    const map = maps[level];
+
+    if (!map) {
+        gameWin();
+        return; //return para no volver a renderizar el mapa ya que completado el juego, no hay más.
+    }
+
     const mapRows = map.trim().split('\n');
     const mapRowCols = mapRows.map(row => row.trim().split(''));
     console.log({map, mapRows, mapRowCols});
 
+    enemyPositions = []; //Redeclaramos enemyPosition para que los enemigos no se duplicaran cada vez que nos movieramos.
     game.clearRect(0,0,canvasSize,canvasSize);
+
     mapRowCols.forEach((row, rowI) => {
         row.forEach((col, colI) => {
             const emoji = emojis[col];
@@ -60,6 +71,11 @@ function startGame(){
             } else if (col == 'I'){
                 giftPosition.x = posX;
                 giftPosition.y = posY;
+            } else if (col == 'X'){
+                enemyPositions.push({
+                    x: posX,
+                    y: posY,
+                });
             }
 
             game.fillText(emoji, posX, posY);
@@ -70,15 +86,35 @@ function startGame(){
 }
 
 function movePlayer() {
-    const giftCollisionX = playerPosition.x.toFixed(2) == giftPosition.x.toFixed(2); //Colocamos toFixed para limitar la cantidad de decimales a 2, para que coincidan con las
-    const giftCollisionY = playerPosition.y.toFixed(2) == giftPosition.y.toFixed(2); //posiciones, ya que sino al haber tantos decimales puede que alguno no coincida y no haga match.
+    const giftCollisionX = playerPosition.x.toFixed(3) == giftPosition.x.toFixed(3); //Colocamos toFixed para limitar la cantidad de decimales a 3, para que coincidan con las
+    const giftCollisionY = playerPosition.y.toFixed(3) == giftPosition.y.toFixed(3); //posiciones, ya que sino al haber tantos decimales puede que alguno no coincida y no haga match.
     const giftCollision = giftCollisionX && giftCollisionY;
     
     if (giftCollision){
-        console.log('Subiste de nivel');
+        levelWin();
+    }
+
+    const enemyCollision = enemyPositions.find(enemy => {
+        const enemyCollisionX = enemy.x.toFixed(3) == playerPosition.x.toFixed(3);
+        const enemyCollisionY = enemy.y.toFixed(3) == playerPosition.y.toFixed(3);
+        return enemyCollisionX && enemyCollisionY;
+    });
+
+    if (enemyCollision){
+        console.log('CHOCASTE CON UN ENEMIGO');
     }
 
     game.fillText(emojis['PLAYER'], playerPosition.x , playerPosition.y);
+}
+
+function levelWin(){
+    // console.log('Subiste de nivel');
+    level++;
+    startGame();
+}
+
+function gameWin(){
+    console.log('Completaste el juego');
 }
 
 window.addEventListener("keydown", moveByKeys);
