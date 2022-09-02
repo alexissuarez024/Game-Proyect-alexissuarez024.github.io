@@ -6,6 +6,8 @@ const btnRight = document.querySelector("#right");
 const btnDown = document.querySelector("#down");
 const spanLives = document.querySelector("#lives");
 const spanTime = document.querySelector("#time");
+const spanRecord = document.querySelector("#record");
+const pResult = document.querySelector("#result");
 
 let canvasSize;
 let elementsSize;
@@ -31,14 +33,20 @@ window.addEventListener("resize", setCanvasSize);
 
 function setCanvasSize(){
     if (window.innerHeight > window.innerWidth) { //Si el alto es mas grande que el ancho
-        canvasSize = (window.innerWidth * 0.9);  //El 'canvasSize' pasara a ser multiplicado por 0.9 para poder tener medidas iguales
+        canvasSize = (window.innerWidth * 0.7);  //El 'canvasSize' pasara a ser multiplicado por 0.9 para poder tener medidas iguales
     } else{
-        canvasSize = (window.innerHeight * 0.9); //Lo mismo pero al contrario, ahora se multiplica el alto.
+        canvasSize = (window.innerHeight * 0.7); //Lo mismo pero al contrario, ahora se multiplica el alto.
     }
-canvas.setAttribute("width", canvasSize);  //Aplicamos los cambios al canvas 
-canvas.setAttribute("height", canvasSize); //Aplicamos los cambios al canvas
+
+    canvasSize = Number(canvasSize.toFixed(0));
+
+    canvas.setAttribute("width", canvasSize);  //Aplicamos los cambios al canvas 
+    canvas.setAttribute("height", canvasSize); //Aplicamos los cambios al canvas
 
    elementsSize = (canvasSize / 10) - 1;
+
+   playerPosition.x = undefined;
+   playerPosition.y = undefined;
 
    startGame();
 }
@@ -96,6 +104,7 @@ function startGame(){
     });
 
     movePlayer();
+    showRecord();
 }
 
 function movePlayer() {
@@ -145,6 +154,21 @@ function levelFail(){
 function gameWin(){
     console.log('Completaste el juego');
     clearInterval(timeInterval);
+
+    const recordTime = localStorage.getItem("record_time");
+    const playerTime = Date.now() - timeStart;
+    if (recordTime){
+        if (recordTime >= playerTime){
+            localStorage.setItem("record_time", playerTime);
+            pResult.innerHTML = "Superaste el record";
+        } else {
+            pResult.innerHTML = "lo siento, no superaste el record";
+        }
+    } else {
+        localStorage.setItem("record_time", playerTime);
+        pResult.innerHTML = "Tu primer record, trata de superarlo";
+    }
+    console.log({recordTime, playerTime});
 }
 
 function showLives(){
@@ -152,7 +176,11 @@ function showLives(){
 }                                                        //especificado de copias de la cadena en la cual fue llamada, concatenados. (Sirve con Strings)
 
 function showTime(){
-    spanTime.innerHTML = +((Date.now() - timeStart)/1000);
+    spanTime.innerHTML = ((Date.now() - timeStart)/1000);
+}
+
+function showRecord(){
+    spanRecord.innerHTML = localStorage.getItem("record_time");
 }
 
 window.addEventListener("keydown", moveByKeys);
